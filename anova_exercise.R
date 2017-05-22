@@ -1,50 +1,81 @@
+# install.packages("ggplot2")
+# install.packages("plyr")
+
 library("ggplot2")
+library("plyr")
 
-# import data
+# importing data
 
-data.flowering <- read.table("/biodata/dep_coupland/grp_korff/artem/scripts_git/teaching_notes_ppt/flowering.data")
+data.flowering <- read.table("flowering.data", colClasses = c(rep("factor",3), "integer", rep("factor",2)))
 
-colnames(data.flowering) <- c("sample","photoperiod","replicate","value")
+colnames(data.flowering) <- c("genotype","photoperiod","replicate","value","M1","M2")
 
-head(data.flowering)
+# testing normality of the data
 
-# convert data types to "factor"
+shapiro.test(subset(data.flowering, photoperiod %in% "LD")$value)
 
-#data.flowering.all$Biol_repl <- as.factor(data.flowering.all$Biol_repl)
+## visualizing distributions
 
-# anova calculations
+# density plots
 
-a <- aov(value~sample*photoperiod, data.flowering)
+ggplot(data.flowering, aes(x=value, fill = photoperiod)) + 
+  geom_density(alpha=0.3)
 
-a.sd <- aov(value ~ sample * replicate, data = data.flowering[data.flowering$photoperiod=="SD",])
+#histogram
 
-a.ld <- aov(value ~ sample * replicate, data = data.flowering[data.flowering$photoperiod=="LD",])
+flmeans <- ddply(data.flowering, c("photoperiod","genotype"), function(x){mean(x$value)})
 
-# summarizing anova calculations SS I type
+ggplot(data=flmeans, aes(x=V1, fill=photoperiod)) + 
+  geom_histogram()
 
-anI.all <- summary(a)
+# box plots
 
-anI.sd <- summary(a.sd)
-anI.ld <- summary(a.ld)
+ggplot(data.flowering, aes(y=value,x=photoperiod)) + 
+  geom_boxplot(notch=T) + 
+  geom_jitter(width=.3, alpha=.1) + 
+  theme(legend.position="none") 
 
-# summarizing anova calculations SS III type
+ggplot(data.flowering, aes(y=value,x=photoperiod, fill=replicate)) + 
+  geom_boxplot(notch=T) + 
+  geom_point(aes(group=replicate),position=position_jitterdodge(jitter.width=.4),alpha=.1) + 
+  theme(legend.position="none") 
 
-anIII.all <- drop1(a,~., test = "F")
+### calculating ANOVA
 
-anIII.sd <- drop1(a.sd,~.,test="F")
-anIII.ld <- drop1(a.ld,~.,test="F")
+anova_results <- aov(value~genotype*photoperiod, data = data.flowering)
 
-# plotting
+# separately for short & long days
 
-# density plots of flowering in two replicates
+anova_results.sd <- aov(value ~ genotype * replicate, data = data.flowering[data.flowering$photoperiod=="SD",])
 
-# for Long days
+anova_results.ld <- aov(value ~ genotype * replicate, data = data.flowering[data.flowering$photoperiod=="LD",])
 
-ggplot(data.flowering, aes(x=value, fill = photoperiod)) + geom_density(alpha=0.3)
+### summarizing ANOVA results - SS I type
 
-# box plot of flowewing time values by biol replicate and photoperiod
+anovaI.all <- summary(anova_results)
 
-ggplot(data.flowering, aes(y=value,x=photoperiod,fill=replicate)) + geom_boxplot(notch=T) + geom_jitter(width=.3, alpha=.1) + theme(legend.position="none") 
+# separately for short & long days
+
+anI.sd <- summary(anova_results.sd)
+
+anI.ld <- summary(anova_results.ld)
 
 
-#######################################
+### summarizing ANOVA results - SS III type
+
+anIII.all <- drop1(anova_results,~., test = "F")
+
+# separately for short & long days
+
+anIII.sd <- drop1(anova_results.sd,~.,test="F")
+
+anIII.ld <- drop1(anova_results.ld,~.,test="F")
+
+
+### association analysis / mapping
+
+association <- aov(value~photoperiod * M1 * M2, data = data.flowering)
+summary(association)
+drop1(association,~.,test="F")
+
+## END
