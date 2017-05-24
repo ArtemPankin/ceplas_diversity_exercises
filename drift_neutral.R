@@ -27,6 +27,8 @@ c}
 drift(100,0.5,100,20)
 
 # loop 100 times; X sec delay between plots
+
+x <- 1
 while(x<100) {print(drift(100,0.5,100,20))
     delay <- 5
     now <- proc.time()[3]
