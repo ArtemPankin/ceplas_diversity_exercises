@@ -12,20 +12,20 @@ library(OutFLANK)
 
 ### the SNP data ###
 
-SNPdata <- read.table("outflank_example.data", header=F)
+SNPdata <- read.table("/biodata/dep_coupland/grp_korff/artem/scripts_git/ceplas_diversity_exercises/outflank_example.data", header=F)
 ### Show the first 5 SNPs in the first 6 individuals:
 head(SNPdata[,1:5])
 nrow(SNPdata)
 ncol(SNPdata)
 
 ### the individuals data
-ind <- read.table("outflank_example.pop", header=F)
+ind <- read.table("/biodata/dep_coupland/grp_korff/artem/scripts_git/ceplas_diversity_exercises/outflank_example.pop", header=F)
 ind <- as.character(ind$V1)
 head(ind)
 
 ### the loci info ###
 
-loci <- read.table("outflank_example.lociinfo", header=T)
+loci <- read.table("/biodata/dep_coupland/grp_korff/artem/scripts_git/ceplas_diversity_exercises/outflank_example.lociinfo", header=T)
 head(loci)
 
 locinames <- paste(loci[,1],loci[,2],loci[,3], sep="_")
@@ -62,8 +62,10 @@ points(FstDataFrame_missing$FST[1], FstDataFrame_missing$FSTNoCorr[1], col="blue
 abline(0,1)
 
 ### running OutFLANK on Fst data.frame ###
+## Default options: OutFLANK(FstDataFrame, LeftTrimFraction=0.05, RightTrimFraction=0.05, Hmin=0.1, NumberOfSamples, qthreshold=0.05)
 
-OF <- OutFLANK(FstDataFrame, NumberOfSamples=19)
+
+OF <- OutFLANK(subset(FstDataFrame, He > 0.2), NumberOfSamples=19, RightTrimFraction = 0.05)
 
 str(OF)
 
@@ -77,6 +79,9 @@ OutFLANKResultsPlotter(OF, withOutliers = TRUE, NoCorr = TRUE,
                        Hmin = 0.1, binwidth = 0.005, Zoom = T, 
                        RightZoomFraction = 0.05, titletext = NULL)
 
+### extract outlier loci ###
+
+OF$results$LocusName[OF$results$OutlierFlag]
 
 ### plot Heterozygosity vs. FST to highlight outliers ###
 
@@ -121,3 +126,17 @@ abline(0,1)
 table(OF$result$type[OF$result$qvalues<0.3])
 
 ############### END ###################
+
+OF <- OutFLANK(FstDataFrame[FstDataFrame$He > 0.05,], NumberOfSamples=19)
+
+
+OutFLANKResultsPlotter(OF, withOutliers = TRUE, NoCorr = TRUE,
+                       Hmin = 0.1, binwidth = 0.005, Zoom = TRUE, 
+                       RightZoomFraction = 0.05, titletext = NULL)
+
+OF$results[OF$results$OutlierFlag,]
+
+## correct solution!!
+
+sort(head(OF$results[order(-OF$results$FSTNoCorr),], n=12)$LocusName)
+
