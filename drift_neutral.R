@@ -1,11 +1,9 @@
-## simulator of genetic drift
+## simple simulator of genetic drift
 
 # install.packages("ggplot2")
 library(ggplot2)
 
-# options( expressions = 5e5 )
-
-# usage 'drift' function - drift(number_idividuals, starting_allele_frequency,number_generations, number_mutations)
+# load the function
 
 drift <- function(num_samp,start_freq, num_gen,num_rep){c <- ggplot() + 
   ylim(0,1)
@@ -24,15 +22,29 @@ invisible(sapply(1:num_rep, function(x){
 }))
 c}
 
+<<<<<<< HEAD
 drift(500,0.005,100,10)
+=======
 
-# loop 100 times; X sec delay between plots
+
+# usage 'drift' function - drift(number_idividuals, starting_allele_frequency,number_generations, number_mutations)
+
+drift(100,0.5,100,20)
+>>>>>>> aafa10623aab2c2cb59a5c3e00ea4d333df882d8
+
+
+
+# OPTIONAL - loop 100 times; x sec delay between plots
 
 x <- 1
+<<<<<<< HEAD
 while(x<100) {print(drift(500,0.005,100,200))
+=======
+
+while(x<100) {print(drift(100,0.5,100,20))
+>>>>>>> aafa10623aab2c2cb59a5c3e00ea4d333df882d8
     delay <- 5
     now <- proc.time()[3]
   while(proc.time()[3] < (now + delay)) {dum <- 0}
 x<- x+1
     }
-
