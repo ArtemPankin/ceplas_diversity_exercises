@@ -24,12 +24,12 @@ invisible(sapply(1:num_rep, function(x){
 }))
 c}
 
-drift(100,0.5,100,20)
+drift(500,0.005,100,10)
 
 # loop 100 times; X sec delay between plots
 
 x <- 1
-while(x<100) {print(drift(100,0.5,100,20))
+while(x<100) {print(drift(500,0.005,100,200))
     delay <- 5
     now <- proc.time()[3]
   while(proc.time()[3] < (now + delay)) {dum <- 0}
