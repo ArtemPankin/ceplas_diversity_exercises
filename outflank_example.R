@@ -17,7 +17,7 @@ library(OutFLANK)
 
 ### load the SNP marker data ###
 
-SNPdata <- read.table("ceplas_diversity_exercises/outflank_example.data", header=F)
+SNPdata <- read.table("outflank_example.data", header=F)
 
 ## show the first 5 SNPs in the first 6 individuals:
 ## number of rows = number of individuals
@@ -28,19 +28,15 @@ nrow(SNPdata)
 ncol(SNPdata)
 
 ### load the individuals data - which indidual from which population
-ind <- read.table("ceplas_diversity_exercises/outflank_example.pop", header=F)
+ind <- read.table("outflank_example.pop", header=F)
 ind <- as.character(ind$V1)
 head(ind)
 
 ### the loci info ###
 
-loci <- read.table("ceplas_diversity_exercises/outflank_example.lociinfo", header=T)
+loci <- read.table("outflank_example.lociinfo", header=T)
 head(loci)
 
-ncol(SNPdata)
-length(locinames)
-
-#locinames <- loci
 locinames <- paste(loci[,1],loci[,2],loci[,3], sep="_")
 table(loci$type)
 
@@ -70,8 +66,6 @@ SNPdata_missing[missing,1] <- 9
 FstDataFrame_missing <- MakeDiploidFSTMat(SNPdata_missing,locinames,ind)
 
 plot(FstDataFrame_missing$FST, FstDataFrame_missing$FSTNoCorr, xlim=c(-0.01,0.3), ylim=c(-0.01,0.3), pch=20)
-
-## Highlight the SNP that is missing a lot of data
 
 points(FstDataFrame_missing$FST[1], FstDataFrame_missing$FSTNoCorr[1], col="blue", pch=8, cex=1.3)
 abline(0,1)
@@ -105,14 +99,13 @@ points(OF$results$He[OF$results$OutlierFlag], OF$results$FST[OF$results$OutlierF
 
 ### plot the true outliers ###
 
-plot(OF$results$He, OF$results$qvalues, pch=20, col= rgb(0,0,0,0.5), cex=0.5,
-     xlab="He", ylab="FST")
+plot(OF$results$He, OF$results$FST, pch=20, col= rgb(0,0,0,0.5), cex=0.5, xlab="He", ylab="FST")
 
 ### Color qtl in orange
-points(OF$results$He[OF$results$type=="quanti"], OF$results$qvalues[OF$results$type=="quanti"], pch=19, col= rgb(1,0.5,0,1))
+points(OF$results$He[OF$results$type=="quanti"], OF$results$FST[OF$results$type=="quanti"], pch=19, col= rgb(1,0.5,0,1))
 
 ### Outline identified outliers in blue
-points(OF$results$He[OF$results$OutlierFlag], OF$results$qvalues[OF$results$OutlierFlag], pch=1, col= rgb(0,0,1,1))
+points(OF$results$He[OF$results$OutlierFlag], OF$results$FST[OF$results$OutlierFlag], pch=1, col= rgb(0,0,1,1))
 
 ### check FDR of the analysis ###
 
@@ -140,17 +133,4 @@ abline(0,1)
 table(OF$result$type[OF$result$qvalues<0.3])
 
 ############### END ###################
-
-OF <- OutFLANK(FstDataFrame[FstDataFrame$He > 0.05,], NumberOfSamples=19)
-
-
-OutFLANKResultsPlotter(OF, withOutliers = TRUE, NoCorr = TRUE,
-                       Hmin = 0.1, binwidth = 0.005, Zoom = TRUE, 
-                       RightZoomFraction = 0.05, titletext = NULL)
-
-OF$results[OF$results$OutlierFlag,]
-
-## correct solution!!
-
-sort(head(OF$results[order(-OF$results$FSTNoCorr),], n=12)$LocusName)
 
