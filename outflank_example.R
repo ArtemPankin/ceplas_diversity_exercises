@@ -4,34 +4,47 @@ library(devtools)
 source("http://bioconductor.org/biocLite.R")
 biocLite("qvalue")
 
+# biocLite("BiocUpgrade")
+# install.packages("BiocManager")
+# library(BiocManager)
+# install("qvalue")
+
 install_github("whitlock/OutFLANK")
 
 library(OutFLANK)
 
 ### Example ####
 
-### the SNP data ###
+### load the SNP marker data ###
 
-SNPdata <- read.table("/biodata/dep_coupland/grp_korff/artem/scripts_git/ceplas_diversity_exercises/outflank_example.data", header=F)
-### Show the first 5 SNPs in the first 6 individuals:
+SNPdata <- read.table("ceplas_diversity_exercises/outflank_example.data", header=F)
+
+## show the first 5 SNPs in the first 6 individuals:
+## number of rows = number of individuals
+## number of columns  = number of SNP markers
+
 head(SNPdata[,1:5])
 nrow(SNPdata)
 ncol(SNPdata)
 
-### the individuals data
-ind <- read.table("/biodata/dep_coupland/grp_korff/artem/scripts_git/ceplas_diversity_exercises/outflank_example.pop", header=F)
+### load the individuals data - which indidual from which population
+ind <- read.table("ceplas_diversity_exercises/outflank_example.pop", header=F)
 ind <- as.character(ind$V1)
 head(ind)
 
 ### the loci info ###
 
-loci <- read.table("/biodata/dep_coupland/grp_korff/artem/scripts_git/ceplas_diversity_exercises/outflank_example.lociinfo", header=T)
+loci <- read.table("ceplas_diversity_exercises/outflank_example.lociinfo", header=T)
 head(loci)
 
+ncol(SNPdata)
+length(locinames)
+
+#locinames <- loci
 locinames <- paste(loci[,1],loci[,2],loci[,3], sep="_")
 table(loci$type)
 
-### calculating input matrix (fst, etc) ###
+### calculate input matrix (fst and other parameter) ###
 
 FstDataFrame <- MakeDiploidFSTMat(SNPdata,locinames,ind)
 FstDataFrame <- data.frame(FstDataFrame,loci)
@@ -57,13 +70,14 @@ SNPdata_missing[missing,1] <- 9
 FstDataFrame_missing <- MakeDiploidFSTMat(SNPdata_missing,locinames,ind)
 
 plot(FstDataFrame_missing$FST, FstDataFrame_missing$FSTNoCorr, xlim=c(-0.01,0.3), ylim=c(-0.01,0.3), pch=20)
+
 ## Highlight the SNP that is missing a lot of data
+
 points(FstDataFrame_missing$FST[1], FstDataFrame_missing$FSTNoCorr[1], col="blue", pch=8, cex=1.3)
 abline(0,1)
 
 ### running OutFLANK on Fst data.frame ###
 ## Default options: OutFLANK(FstDataFrame, LeftTrimFraction=0.05, RightTrimFraction=0.05, Hmin=0.1, NumberOfSamples, qthreshold=0.05)
-
 
 OF <- OutFLANK(subset(FstDataFrame, He > 0.2), NumberOfSamples=19, RightTrimFraction = 0.05)
 
@@ -97,7 +111,7 @@ plot(OF$results$He, OF$results$qvalues, pch=20, col= rgb(0,0,0,0.5), cex=0.5,
 ### Color qtl in orange
 points(OF$results$He[OF$results$type=="quanti"], OF$results$qvalues[OF$results$type=="quanti"], pch=19, col= rgb(1,0.5,0,1))
 
-### Outline outliers in blue
+### Outline identified outliers in blue
 points(OF$results$He[OF$results$OutlierFlag], OF$results$qvalues[OF$results$OutlierFlag], pch=1, col= rgb(0,0,1,1))
 
 ### check FDR of the analysis ###
